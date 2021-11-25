@@ -12,7 +12,6 @@ from torch.nn.init import trunc_normal_
 import utils.weight_init_helper as init_helper
 from .batchnorm_helper import get_norm
 from .stem_helper import PatchEmbed
-from .utils import round_width, validate_checkpoint_wrapper_import
 
 from . import head_helper, resnet_helper, stem_helper
 from .build import MODEL_REGISTRY

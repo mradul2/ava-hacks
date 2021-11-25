@@ -358,8 +358,8 @@ class SlowFast(nn.Module):
         x = self.s4(x)
         x = self.s4_fuse(x)
         x = self.s5(x)
-        # if self.enable_detection:
-        #     x = self.head(x, bboxes)
-        # else:
-        #     x = self.head(x)
+        if self.enable_detection:
+            x = self.head(x, bboxes)
+        else:
+            x = self.head(x)
         return x

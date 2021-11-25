@@ -15,4 +15,4 @@ mymodel.load_state_dict((torch.load(path, map_location=torch.device('cpu')))['mo
 
 rand_input = [torch.rand(1, 3, 16, 224, 224), torch.rand(1, 3, 64, 224, 224)]
 rand_output = mymodel(rand_input)
-print(rand_output.shape)
+print(rand_output[0].shape, rand_output[1].shape)

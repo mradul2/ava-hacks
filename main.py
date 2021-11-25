@@ -1,5 +1,5 @@
-from slowfast.config.defaults import assert_and_infer_cfg
-from slowfast.utils.parser import load_config, parse_args
+from utils.def_config import assert_and_infer_cfg
+from utils.parser import load_config, parse_args
 import torch
 
 # Trained SlowFast R101 on AVA 2.2, pre-trained on Kinetics 600 (mAP: 29.4)

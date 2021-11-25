@@ -10,7 +10,7 @@ python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 ## Installation
 
 ``` bash
-! git clone https://github.com/mradul2/test.
+git clone https://github.com/mradul2/test.
 ```
 ## Usage
 

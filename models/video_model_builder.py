@@ -362,4 +362,4 @@ class SlowFast(nn.Module):
         #     x = self.head(x, bboxes)
         # else:
         #     x = self.head(x)
-        # return x
+        return x

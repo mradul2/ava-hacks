@@ -11,8 +11,28 @@ cfg = assert_and_infer_cfg(cfg)
 
 from models import build_model
 mymodel = build_model(cfg)
-mymodel.load_state_dict((torch.load(path, map_location=torch.device('cpu')))['model_state'])
+mymodel.load_state_dict((torch.load(path))['model_state'])
 
-rand_input = [torch.rand(1, 3, 16, 224, 224), torch.rand(1, 3, 64, 224, 224)]
+rand_input = torch.rand(1, 3, 64, 224, 224)
+frames = rand_input
+
+fast_pathway = torch.index_select(
+            frames,
+            2,
+            torch.linspace(
+                0, frames.shape[2] - 1, frames.shape[2] // 2
+            ).long(),
+        ).to('cuda')
+slow_pathway = torch.index_select(
+            frames,
+            2,
+            torch.linspace(
+                0, frames.shape[2] - 1, frames.shape[2] // 16
+            ).long(),
+        ).to('cuda')
+
+frame_list = [slow_pathway, fast_pathway]       
+
+rand_input = frame_list
 rand_output = mymodel(rand_input)
 print(rand_output[0].shape, rand_output[1].shape)

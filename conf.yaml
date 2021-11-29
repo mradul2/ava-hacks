@@ -13,7 +13,7 @@ AVA:
   DETECTION_SCORE_THRESH: 0.8
   TEST_PREDICT_BOX_LISTS: ["person_box_67091280_iou90/ava_detection_val_boxes_and_labels.csv"]
 SLOWFAST:
-  ALPHA: 4
+  ALPHA: 8
   BETA_INV: 8
   FUSION_CONV_CHANNEL_RATIO: 2
   FUSION_KERNEL_SZ: 5

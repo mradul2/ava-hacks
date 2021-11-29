@@ -10,10 +10,10 @@ python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 ## Installation
 
 ``` bash
-git clone https://github.com/mradul2/test.
+git clone https://github.com/mradul2/test
 ```
 ## Usage
 
 ``` bash
-python main.py --cfg conf.yaml NUM_GPUS 0
+python main.py --cfg conf.yaml NUM_GPUS 1
 ```

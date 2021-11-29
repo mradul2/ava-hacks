@@ -2,6 +2,7 @@ from utils.def_config import assert_and_infer_cfg
 from utils.parser import load_config, parse_args
 import torch
 import torch.nn as nn
+import torchvision
 
 # Trained SlowFast R101 on AVA 2.2, pre-trained on Kinetics 600 (mAP: 29.4)
 path = '/content/drive/MyDrive/SLOWFAST_64x2_R101_50_50A.pkl'
@@ -45,3 +46,13 @@ h, w = feats[0].shape[3:]
 feats = [nn.AdaptiveAvgPool3d((1, h, w))(f).view(-1, f.shape[1], h, w) for f in feats]
 feats = torch.cat(feats, dim=1)
 print(feats.shape)
+
+rois = torch.tensor([[0, 2.1, 3, 4, 5],[0, 2.1, 2, 4, 5]]).to('cuda')
+
+roi_spatial = 7
+roi_maxpool = nn.MaxPool2d(roi_spatial)
+roi_feats = torchvision.ops.roi_align(feats, rois, (roi_spatial, roi_spatial))
+num_roi = 2
+roi_feats = roi_maxpool(roi_feats).view(num_roi, -1)
+
+print(roi_feats.shape)

@@ -12,6 +12,11 @@ cfg = load_config(args)
 cfg = assert_and_infer_cfg(cfg)
 
 from models import build_model
+from datasets import loader
+
+myloader = loader.construct_loader(cfg, "val")
+
+
 mymodel = build_model(cfg)
 mymodel.load_state_dict((torch.load(path))['model_state'])
 

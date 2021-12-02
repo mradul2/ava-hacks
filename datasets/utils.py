@@ -10,7 +10,8 @@ import cv2
 import torch
 from torch.utils.data.distributed import DistributedSampler
 
-from slowfast.utils.env import pathmgr
+from iopath.common.file_io import PathManagerFactory
+pathmgr = PathManagerFactory.get(key="pyslowfast")
 
 from . import transform as transform
 

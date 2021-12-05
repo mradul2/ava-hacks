@@ -14,7 +14,7 @@ cfg = assert_and_infer_cfg(cfg)
 from models import build_model
 from datasets import loader
 
-myloader = loader.construct_loader(cfg, "val")
+myloader = loader.construct_loader(cfg, "train")
 
 
 mymodel = build_model(cfg)
@@ -41,23 +41,7 @@ slow_pathway = torch.index_select(
 frame_list = [slow_pathway, fast_pathway]       
 
 rand_input = frame_list
-rand_output = mymodel(rand_input)
-print(rand_output[0].shape, rand_output[1].shape)
+rand_bbox = torch.tensor([[0, 2.1, 3, 4, 5],[0, 2.1, 2, 4, 5]]).to('cuda')
 
-feats = rand_output
-# temporal average pooling
-h, w = feats[0].shape[3:]
-# requires all features have the same spatial dimensions
-feats = [nn.AdaptiveAvgPool3d((1, h, w))(f).view(-1, f.shape[1], h, w) for f in feats]
-feats = torch.cat(feats, dim=1)
-print(feats.shape)
-
-rois = torch.tensor([[0, 2.1, 3, 4, 5],[0, 2.1, 2, 4, 5]]).to('cuda')
-
-roi_spatial = 7
-roi_maxpool = nn.MaxPool2d(roi_spatial)
-roi_feats = torchvision.ops.roi_align(feats, rois, (roi_spatial, roi_spatial))
-num_roi = 2
-roi_feats = roi_maxpool(roi_feats).view(num_roi, -1)
-
-print(roi_feats.shape)
+rand_output = mymodel(rand_input, rand_bbox)
+print(rand_output.shape)

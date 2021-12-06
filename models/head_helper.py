@@ -120,13 +120,13 @@ class ResNetRoIHead(nn.Module):
         # B C H W.
         x = torch.cat(pool_out, 1)
 
-        # Perform dropout.
-        if hasattr(self, "dropout"):
-            x = self.dropout(x)
+        # # Perform dropout.
+        # if hasattr(self, "dropout"):
+        #     x = self.dropout(x)
 
-        x = x.view(x.shape[0], -1)
-        x = self.projection(x)
-        x = self.act(x)
+        # x = x.view(x.shape[0], -1)
+        # x = self.projection(x)
+        # x = self.act(x)
         return x
 
 

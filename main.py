@@ -20,28 +20,27 @@ myloader = loader.construct_loader(cfg, "train")
 mymodel = build_model(cfg)
 mymodel.load_state_dict((torch.load(path))['model_state'])
 
-rand_input = torch.rand(1, 3, 64, 224, 224)
-frames = rand_input
 
-fast_pathway = torch.index_select(
-            frames,
-            2,
-            torch.linspace(
-                0, frames.shape[2] - 1, frames.shape[2] // 2
-            ).long(),
-        ).to('cuda')
-slow_pathway = torch.index_select(
-            frames,
-            2,
-            torch.linspace(
-                0, frames.shape[2] - 1, frames.shape[2] // 8
-            ).long(),
-        ).to('cuda')
+for batch in myloader:
+  batch = batch
+  inputs, labels, _, meta = batch
 
-frame_list = [slow_pathway, fast_pathway]       
+  if cfg.NUM_GPUS:
+      # Transferthe data to the current GPU device.
+      if isinstance(inputs, (list,)):
+          for i in range(len(inputs)):
+              inputs[i] = inputs[i].cuda(non_blocking=True)
+      else:
+          inputs = inputs.cuda(non_blocking=True)
+      labels = labels.cuda()
+      for key, val in meta.items():
+          if isinstance(val, (list,)):
+              for i in range(len(val)):
+                  val[i] = val[i].cuda(non_blocking=True)
+          else:
+              meta[key] = val.cuda(non_blocking=True)
 
-rand_input = frame_list
-rand_bbox = torch.tensor([[0, 2.1, 3, 4, 5],[0, 2.1, 2, 4, 5]]).to('cuda')
+  preds = model(inputs, meta["boxes"])
+  break
 
-rand_output = mymodel(rand_input, rand_bbox)
-print(rand_output.shape)
+

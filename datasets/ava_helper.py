@@ -205,14 +205,14 @@ def parse_bboxes_file(
                     if score < detect_thresh:
                         continue
 
-                video_name, frame_sec = row[0], int(row[1])
+                video_name, frame_sec = row[0], int(float(row[1]))
                 if frame_sec % boxes_sample_rate != 0:
                     continue
 
                 # Box with format [x1, y1, x2, y2] with a range of [0, 1] as float.
                 box_key = ",".join(row[2:6])
                 box = list(map(float, row[2:6]))
-                label = -1 if row[6] == "" else int(row[6])
+                label = -1 if row[6] == "" else int(float(row[6]))
 
                 if video_name not in all_boxes:
                     all_boxes[video_name] = {}

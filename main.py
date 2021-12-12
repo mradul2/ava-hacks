@@ -76,6 +76,5 @@ def main():
     test_meter = perform_test(myloader, mymodel, test_meter, cfg)
         
 
-
 if __name__ == "__main__":
   main()

@@ -12,7 +12,6 @@ from fvcore.common.timer import Timer
 from sklearn.metrics import average_precision_score
 
 import datasets.ava_helper as ava_helper
-import utils.logging as logging
 import utils.metrics as metrics
 import utils.misc as misc
 from utils.ava_eval_helper import (
@@ -22,8 +21,21 @@ from utils.ava_eval_helper import (
     read_labelmap,
 )
 
-logger = logging.get_logger(__name__)
+import simplejson
+import decimal
 
+def log_json_stats(stats):
+    """
+    Logs json stats.
+    Args:
+        stats (dict): a dictionary of statistical information to log.
+    """
+    stats = {
+        k: decimal.Decimal("{:.5f}".format(v)) if isinstance(v, float) else v
+        for k, v in stats.items()
+    }
+    json_stats = simplejson.dumps(stats, sort_keys=True, use_decimal=True)
+    print("json_stats: {:s}".format(json_stats))
 
 def get_ava_mini_groundtruth(full_groundtruth):
     """
@@ -133,7 +145,7 @@ class AVAMeter(object):
         else:
             raise NotImplementedError("Unknown mode: {}".format(self.mode))
 
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
     def iter_tic(self):
         """
@@ -207,7 +219,7 @@ class AVAMeter(object):
         )
         if log:
             stats = {"mode": self.mode, "map": self.full_map}
-            logging.log_json_stats(stats)
+            log_json_stats(stats)
 
     def log_epoch_stats(self, cur_epoch):
         """
@@ -225,7 +237,7 @@ class AVAMeter(object):
                 "gpu_mem": "{:.2f}G".format(misc.gpu_mem_usage()),
                 "RAM": "{:.2f}/{:.2f}G".format(*misc.cpu_mem_usage()),
             }
-            logging.log_json_stats(stats)
+            log_json_stats(stats)
 
 
 class TestMeter(object):
@@ -343,7 +355,7 @@ class TestMeter(object):
             "eta": eta,
             "time_diff": self.iter_timer.seconds(),
         }
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
     def iter_tic(self):
         """
@@ -370,7 +382,7 @@ class TestMeter(object):
             ks = (1, 5) correspods to top-1 and top-5 accuracy.
         """
         if not all(self.clip_count == self.num_clips):
-            logger.warning(
+            print(
                 "clip count {} ~= num clips {}".format(
                     ", ".join(
                         [
@@ -401,7 +413,7 @@ class TestMeter(object):
                 self.stats["top{}_acc".format(k)] = "{:.{prec}f}".format(
                     topk, prec=2
                 )
-        logging.log_json_stats(self.stats)
+        log_json_stats(self.stats)
 
 
 class ScalarMeter(object):
@@ -566,7 +578,7 @@ class TrainMeter(object):
         if not self._cfg.DATA.MULTI_LABEL:
             stats["top1_err"] = self.mb_top1_err.get_win_median()
             stats["top5_err"] = self.mb_top5_err.get_win_median()
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
     def log_epoch_stats(self, cur_epoch):
         """
@@ -596,7 +608,7 @@ class TrainMeter(object):
             stats["top1_err"] = top1_err
             stats["top5_err"] = top5_err
             stats["loss"] = avg_loss
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
 
 class ValMeter(object):
@@ -707,7 +719,7 @@ class ValMeter(object):
         if not self._cfg.DATA.MULTI_LABEL:
             stats["top1_err"] = self.mb_top1_err.get_win_median()
             stats["top5_err"] = self.mb_top5_err.get_win_median()
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
     def log_epoch_stats(self, cur_epoch):
         """
@@ -738,7 +750,7 @@ class ValMeter(object):
             stats["min_top1_err"] = self.min_top1_err
             stats["min_top5_err"] = self.min_top5_err
 
-        logging.log_json_stats(stats)
+        log_json_stats(stats)
 
 
 def get_map(preds, labels):
@@ -751,7 +763,7 @@ def get_map(preds, labels):
         mean_ap (int): final mAP score.
     """
 
-    logger.info("Getting mAP for {} examples".format(preds.shape[0]))
+    print("Getting mAP for {} examples".format(preds.shape[0]))
 
     preds = preds[:, ~(np.all(labels == 0, axis=0))]
     labels = labels[:, ~(np.all(labels == 0, axis=0))]

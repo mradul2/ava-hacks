@@ -2,7 +2,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import json
-import logging
 import math
 import numpy as np
 import os
@@ -14,6 +13,7 @@ from fvcore.nn.flop_count import flop_count
 from matplotlib import pyplot as plt
 from torch import nn
 
+
 import utils.multiprocessing as mpu
 from datasets.utils import pack_pathway_output
 from models.batchnorm_helper import SubBatchNorm3d
@@ -21,8 +21,6 @@ from models.batchnorm_helper import SubBatchNorm3d
 from iopath.common.file_io import PathManagerFactory
 pathmgr = PathManagerFactory.get(key="pyslowfast")
 
-
-logger = logging.get_logger(__name__)
 
 
 def check_nan_losses(loss):
@@ -182,20 +180,20 @@ def log_model_info(model, cfg, use_train_input=True):
         use_train_input (bool): if True, log info for training. Otherwise,
             log info for testing.
     """
-    logger.info("Model:\n{}".format(model))
-    logger.info("Params: {:,}".format(params_count(model)))
-    logger.info("Mem: {:,} MB".format(gpu_mem_usage()))
-    logger.info(
+    print("Model:\n{}".format(model))
+    print("Params: {:,}".format(params_count(model)))
+    print("Mem: {:,} MB".format(gpu_mem_usage()))
+    print(
         "Flops: {:,} G".format(
             get_model_stats(model, cfg, "flop", use_train_input)
         )
     )
-    logger.info(
+    print(
         "Activations: {:,} M".format(
             get_model_stats(model, cfg, "activation", use_train_input)
         )
     )
-    logger.info("nvidia-smi")
+    print("nvidia-smi")
     os.system("nvidia-smi")
 
 

@@ -23,11 +23,14 @@ AVA:
   TEST_PREDICT_BOX_LISTS: ["ava_val_predicted_boxes.csv"]
   FRAME_LIST_DIR: "/content/drive/MyDrive/ava/frame_lists"
   TRAIN_LISTS: ["train.csv"]
-  TEST_LISTS: ["val.csv"]
+  TEST_LISTS: ["train.csv"]
   FRAME_DIR: "/content/drive/MyDrive/ava/frames"
   TRAIN_GT_BOX_LISTS: [ava_train_v2.1.csv]
   TRAIN_PREDICT_BOX_LISTS: ["ava_train_predicted_boxes.csv"]
   ANNOTATION_DIR: "/content/drive/MyDrive/ava/annotations"
+  EXCLUSION_FILE: "ava_train_excluded_timestamps_v2.1.csv"
+  LABEL_MAP_FILE: "ava_action_list_v2.1_for_activitynet_2018.pbtxt"
+  GROUNDTRUTH_FILE: "ava_train_v2.1.csv"
   
 SLOWFAST:
   ALPHA: 4

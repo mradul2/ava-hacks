@@ -30,7 +30,6 @@ from __future__ import (
     unicode_literals,
 )
 import csv
-import logging
 import numpy as np
 import pprint
 import time
@@ -45,12 +44,12 @@ from utils.ava_evaluation import (
 from iopath.common.file_io import PathManagerFactory
 pathmgr = PathManagerFactory.get(key="pyslowfast")
 
-logger = logging.getLogger(__name__)
+
 
 
 def make_image_key(video_id, timestamp):
     """Returns a unique identifier for a video id & timestamp."""
-    return "%s,%04d" % (video_id, int(timestamp))
+    return "%s,%04d" % (video_id, int(float(timestamp)))
 
 
 def read_csv(csv_file, class_whitelist=None, load_score=False):
@@ -159,8 +158,8 @@ def evaluate_ava(
         video_idx_to_name=video_idx_to_name,
     )
 
-    logger.info("Evaluating with %d unique GT frames." % len(groundtruth[0]))
-    logger.info(
+    print("Evaluating with %d unique GT frames." % len(groundtruth[0]))
+    print(
         "Evaluating with %d unique detection frames" % len(detections[0])
     )
 
@@ -169,7 +168,7 @@ def evaluate_ava(
 
     results = run_evaluation(categories, groundtruth, detections, excluded_keys)
 
-    logger.info("AVA eval done in %f seconds." % (time.time() - eval_start))
+    print("AVA eval done in %f seconds." % (time.time() - eval_start))
     return results["PascalBoxes_Precision/mAP@0.5IOU"]
 
 
@@ -189,7 +188,7 @@ def run_evaluation(
 
     for image_key in boxes:
         if image_key in excluded_keys:
-            logging.info(
+            print(
                 (
                     "Found excluded timestamp in ground truth: %s. "
                     "It will be ignored."
@@ -218,7 +217,7 @@ def run_evaluation(
 
     for image_key in boxes:
         if image_key in excluded_keys:
-            logging.info(
+            print(
                 (
                     "Found excluded timestamp in detections: %s. "
                     "It will be ignored."
@@ -302,5 +301,5 @@ def write_results(detections, filename):
                     % (key, box[1], box[0], box[3], box[2], label, score)
                 )
 
-    logger.info("AVA results wrote to %s" % filename)
-    logger.info("\ttook %d seconds." % (time.time() - start))
+    print("AVA results wrote to %s" % filename)
+    print("\ttook %d seconds." % (time.time() - start))

@@ -1,9 +1,9 @@
-from utils.def_config import assert_and_infer_cfg
-from utils.parser import load_config, parse_args
 import torch
 import torch.nn as nn
 import torchvision
 
+from utils.def_config import assert_and_infer_cfg
+from utils.parser import load_config, parse_args
 from utils.meters import AVAMeter
 
 
@@ -56,9 +56,6 @@ def perform_test(test_loader, model, test_meter, cfg):
 
 
 def main():
-    # Trained SlowFast R101 on AVA 2.2, pre-trained on Kinetics 600 (mAP: 29.4)
-    path = '/content/drive/MyDrive/SLOWFAST_64x2_R101_50_50A.pkl'
-
     args = parse_args()
     cfg = load_config(args)
     cfg = assert_and_infer_cfg(cfg)
@@ -66,12 +63,14 @@ def main():
     from models import build_model
     from datasets import loader
 
+    print("Constucting DataLoader")
     myloader = loader.construct_loader(cfg, "train")
 
-
+    print("Constructing Model")
     mymodel = build_model(cfg)
-    mymodel.load_state_dict((torch.load(path))['model_state'])
+    mymodel.load_state_dict((torch.load(cfg.TRAIN.CHECKPOINT_FILE_PATH))['model_state'])
 
+    print("Constructing AVA Meter")
     test_meter = AVAMeter(len(myloader), cfg, mode="test")
     test_meter = perform_test(myloader, mymodel, test_meter, cfg)
         

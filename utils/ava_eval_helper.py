@@ -77,7 +77,7 @@ def read_csv(csv_file, class_whitelist=None, load_score=False):
             assert len(row) in [7, 8], "Wrong number of columns: " + row
             image_key = make_image_key(row[0], row[1])
             x1, y1, x2, y2 = [float(n) for n in row[2:6]]
-            action_id = int(row[6])
+            action_id = int(float(row[6]))
             if class_whitelist and action_id not in class_whitelist:
                 continue
             score = 1.0
@@ -159,9 +159,7 @@ def evaluate_ava(
     )
 
     print("Evaluating with %d unique GT frames." % len(groundtruth[0]))
-    print(
-        "Evaluating with %d unique detection frames" % len(detections[0])
-    )
+    print("Evaluating with %d unique detection frames" % len(detections[0]))
 
     write_results(detections, "detections_%s.csv" % name)
     write_results(groundtruth, "groundtruth_%s.csv" % name)

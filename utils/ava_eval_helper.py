@@ -300,4 +300,4 @@ def write_results(detections, filename):
                 )
 
     print("AVA results wrote to %s" % filename)
-    print("\ttook %d seconds." % (time.time() - start))
+    print("took %d seconds." % (time.time() - start))

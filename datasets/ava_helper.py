@@ -204,7 +204,7 @@ def parse_bboxes_file(
                     if score < detect_thresh:
                         continue
 
-                video_name, frame_sec = row[0], int(row[1])
+                video_name, frame_sec = row[0], int(float(row[1]))
                 if frame_sec % boxes_sample_rate != 0:
                     continue
 

@@ -1,5 +1,0 @@
-wandb/
-.ipynb_checkpoints/
-__pycache__/
-detections_latest.csv
-groundtruth_latest.csv

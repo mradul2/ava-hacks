@@ -14,12 +14,6 @@ import os
 
 @torch.no_grad()
 def feature_extraction(cfg, data_loader, model, root_dir):  
-    # Create directory for feature storage
-    directory_names = ["preds", "ori_boxes", "labels", "metadata"]
-    for directory_name in directory_names:
-         if not os.path.isdir(os.path.join(root_dir, directory_name)): 
-            os.mkdir(os.path.join(root_dir, directory_name)) 
-    
     model.eval()
     for cur_iter, (inputs, labels, video_idx, meta) in enumerate(tqdm(data_loader)):
         if cfg.NUM_GPUS:
@@ -50,10 +44,13 @@ def feature_extraction(cfg, data_loader, model, root_dir):
         metadata = metadata.detach().cpu() if cfg.NUM_GPUS else metadata.detach()
         labels = labels.detach().cpu() if cfg.NUM_GPUS else labels.detach()
         
-        savez_compressed(root_dir + '/preds/' + str(cur_iter) + '.npz', preds)
-        savez_compressed(root_dir + '/ori_boxes/' + str(cur_iter) + '.npz', ori_boxes)
-        savez_compressed(root_dir + '/metadata/' + str(cur_iter) + '.npz', metadata)
-        savez_compressed(root_dir + '/labels/' + str(cur_iter) + '.npz', labels)
+        file_name = os.path.join(root_dir, str(f'{cur_iter}.npz'))
+        
+        savez_compressed(file_name,
+                        preds=preds,
+                        ori_boxes=ori_boxes,
+                        metadata=metadata,
+                        labels=labels)
 
 def main():
     args = parse_args()
@@ -70,13 +67,13 @@ def main():
     
     
     # Root directory for feature storage: ./features/
-    if not os.path.isdir(os.path.join(cfg.DATA.FEATURE_DIR + "features")): 
-        os.mkdir(os.path.join(cfg.DATA.FEATURE_DIR + "features"))
+    if not os.path.isdir(os.path.join(cfg.DATA.FEATURE_DIR)): 
+        os.mkdir(os.path.join(cfg.DATA.FEATURE_DIR))
     
     # Directory for train feature storage: ./features/train/
     # Directory for train feature storage: ./features/val/
-    train_root_dir = os.path.join(cfg.DATA.FEATURE_DIR, "features/train")
-    val_root_dir = os.path.join(cfg.DATA.FEATURE_DIR, "features/val")
+    train_root_dir = os.path.join(cfg.DATA.FEATURE_DIR, "train")
+    val_root_dir = os.path.join(cfg.DATA.FEATURE_DIR, "val")
     if not os.path.isdir(train_root_dir): 
         os.mkdir(train_root_dir)
     if not os.path.isdir(val_root_dir): 

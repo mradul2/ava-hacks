@@ -400,6 +400,16 @@ _C.SLOWFAST.FUSION_CONV_CHANNEL_RATIO = 2
 # pathway.
 _C.SLOWFAST.FUSION_KERNEL_SZ = 5
 
+# -----------------------------------------------------------------------------
+# WandB options
+# -----------------------------------------------------------------------------
+_C.WANDB = CfgNode()
+
+_C.WANDB.NAME = ""
+
+_C.WANDB.PROJECT = ""
+
+_C.WANDB.RESTORE_NAME = ""
 
 # -----------------------------------------------------------------------------
 # Data options

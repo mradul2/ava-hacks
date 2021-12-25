@@ -1,0 +1,33 @@
+NUM_GPUS: 1
+TRAIN:
+  BATCH_SIZE: 1
+  EVAL_PERIOD: 1
+  CHECKPOINT_PERIOD: 1
+  CHECKPOINT_FILE_PATH: '/home/studio-lab-user/slowfast_head.pth'
+DATA:
+  FEATURE_DIR: "/home/studio-lab-user/features"
+SOLVER:
+  BASE_LR: 5e-3
+  LR_POLICY: ""
+  GAMMA: 0.999
+  STEP_SIZE: 0
+  STEPS: []
+  LRS: []
+  MAX_EPOCH: 300
+  MOMENTUM: 0.9
+  DAMPENING: 0.0
+  WEIGHT_DECAY: 5e-4
+TEST:
+  BATCH_SIZE: 1
+WANDB:
+  NAME: ""
+  PROJECT: "AVA"
+  RESTORE_NAME: "ava_12"
+AVA:
+  TEST_LISTS: ["new_train.csv"]
+  GROUNDTRUTH_FILE: "new_ava_train_v2.2.csv"
+  ANNOTATION_DIR: "/home/studio-lab-user/ava/annotations"
+  FRAME_LIST_DIR: "/home/studio-lab-user/ava/frame_lists"
+  EXCLUSION_FILE: "ava_train_excluded_timestamps_v2.2.csv"
+  LABEL_MAP_FILE: "ava_action_list_v2.2_for_activitynet_2019.pbtxt"
+  FULL_TEST_ON_VAL: True

@@ -19,7 +19,7 @@ Please follow the instructions provided in [DATASET.md](https://github.com/faceb
 Pre-trained Slow-fast model with 29.4 mAP on AVA dataset can be downloaded from here: [Model Link](https://dl.fbaipublicfiles.com/pyslowfast/model_zoo/ava/SLOWFAST_64x2_R101_50_50.pkl)
 
 ```bash
-python3 feature_extraction.py --cfg config.yaml
+python3 feature_extraction.py --cfg configs/slowfast.yaml
 ```
 
 ## Contributors

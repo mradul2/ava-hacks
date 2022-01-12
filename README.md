@@ -10,6 +10,7 @@ python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 ## Installation
 
 ``` bash
+pip install requirements.txt
 git clone https://github.com/mradul2/ava-hacks
 ```
 ## Feature Extraction

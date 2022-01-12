@@ -5,10 +5,10 @@ TRAIN:
   EVAL_PERIOD: 1
   CHECKPOINT_PERIOD: 1
   AUTO_RESUME: True
-  CHECKPOINT_FILE_PATH: '/home/studio-lab-user/SLOWFAST_64x2_R101_50_50.pkl'
+  CHECKPOINT_FILE_PATH: 'path to the pretrained model file'
   CHECKPOINT_TYPE: caffe2
 DATA:
-  FEATURE_DIR: "/home/studio-lab-user/features"
+  FEATURE_DIR: "path to the output feature directory"
   NUM_FRAMES: 64
   SAMPLING_RATE: 2
   TRAIN_JITTER_SCALES: [256, 320]
@@ -22,18 +22,18 @@ AVA:
   BGR: False
   DETECTION_SCORE_THRESH: 0.8
   # Root directories
-  FRAME_DIR: "/home/studio-lab-user/ava/frames"
-  FRAME_LIST_DIR: "/home/studio-lab-user/ava/frame_lists"
-  ANNOTATION_DIR: "/home/studio-lab-user/ava/annotations"
+  FRAME_DIR: "path to the AVA frames directoy"
+  FRAME_LIST_DIR: "/path to the AVA frame list directory"
+  ANNOTATION_DIR: "/path to the AVA annotation directory"
   # Training set files
-  TRAIN_LISTS: ["new_train.csv"]
-  TRAIN_GT_BOX_LISTS: ["new_ava_train_v2.2.csv"]
-  TRAIN_PREDICT_BOX_LISTS: ["new_ava_train_predicted_boxes.csv"]
+  TRAIN_LISTS: ["train.csv"]
+  # TRAIN_GT_BOX_LISTS: ["ava_train_v2.2.csv"]
+  TRAIN_PREDICT_BOX_LISTS: ["ava_train_predicted_boxes.csv"]
   # Validation set files
-  TEST_LISTS: ["new_val.csv"]
-  TEST_PREDICT_BOX_LISTS: ["new_ava_val_predicted_boxes.csv"]
+  TEST_LISTS: ["val.csv"]
+  TEST_PREDICT_BOX_LISTS: ["ava_val_predicted_boxes.csv"]
   # Other files
-  GROUNDTRUTH_FILE: "new_ava_val_v2.2.csv"
+  GROUNDTRUTH_FILE: "ava_val_v2.2.csv"
   EXCLUSION_FILE: "ava_train_excluded_timestamps_v2.2.csv"
   LABEL_MAP_FILE: "ava_action_list_v2.2_for_activitynet_2019.pbtxt"
   FULL_TEST_ON_VAL: True

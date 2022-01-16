@@ -44,10 +44,8 @@ def load_image_lists(cfg, is_train):
                 # The format of each row should follow:
                 # original_vido_id video_id frame_id path labels.
                 assert len(row) == 5
-                row[0] = row[0][1:]
                 video_name = row[0]
-                # row[4] = """"""
-
+        
                 if video_name not in video_name_to_idx:
                     idx = len(video_name_to_idx)
                     video_name_to_idx[video_name] = idx

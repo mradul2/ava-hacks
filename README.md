@@ -1,5 +1,7 @@
 Pipeline for Spatio-Temporal Action Detection using SlowFast Backbone
 
+Project Slides: [Atomic Visual Actions](https://docs.google.com/presentation/d/1OUVZ513kxAnBVbeMvSL1BrT87A0IhdieOdpO5xmOrAc/edit?usp=sharing)
+
 ## Requirements
 
 ``` bash

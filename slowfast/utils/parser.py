@@ -67,7 +67,7 @@ def parse_args():
         type=float,
     )
     parser.add_argument(
-        "--solver_lr_gamma",
+        "--solver_gamma",
         help="Learning rate decay gamma for the solver",
         default=0.1,
         type=float,
@@ -125,8 +125,8 @@ def load_config(args):
     # My work for more command line arguments for wandb sweep
     if hasattr(args, "solver_base_lr"):
         cfg.SOLVER.BASE_LR = args.solver_base_lr
-    if hasattr(args, "solver_lr_gamma"):
-        cfg.SOLVER.LR_GAMMA = args.solver_lr_gamma
+    if hasattr(args, "solver_gamma"):
+        cfg.SOLVER.GAMMA = args.solver_gamma
     if hasattr(args, "solver_max_epochs"):
         cfg.SOLVER.MAX_EPOCHS = args.solver_max_epochs
     if hasattr(args, "solver_weight_decay"):

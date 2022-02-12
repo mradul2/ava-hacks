@@ -58,6 +58,40 @@ def parse_args():
         default=None,
         nargs=argparse.REMAINDER,
     )
+
+    # My work for more command line arguments for wandb sweep
+    parser.add_argument(
+        "--solver_base_lr",
+        help="Base learning rate for the solver",
+        default=0.001,
+        type=float,
+    )
+    parser.add_argument(
+        "--solver_lr_gamma",
+        help="Learning rate decay gamma for the solver",
+        default=0.1,
+        type=float,
+    )
+    parser.add_argument(
+        "--solver_max_epochs",
+        help="Maximum number of epochs for the solver",
+        default=100,
+        type=int,
+    )
+    parser.add_argument(
+        "--solver_weight_decay",
+        help="Weight decay for the solver",
+        default=0.0005,
+        type=float,
+    )
+    parser.add_argument(
+        "--train_batch_size",
+        help="Batch size for training",
+        default=8,
+        type=int,
+    )
+
+
     if len(sys.argv) == 1:
         parser.print_help()
     return parser.parse_args()
@@ -87,5 +121,17 @@ def load_config(args):
         cfg.RNG_SEED = args.rng_seed
     if hasattr(args, "output_dir"):
         cfg.OUTPUT_DIR = args.output_dir
+
+    # My work for more command line arguments for wandb sweep
+    if hasattr(args, "solver_base_lr"):
+        cfg.SOLVER.BASE_LR = args.solver_base_lr
+    if hasattr(args, "solver_lr_gamma"):
+        cfg.SOLVER.LR_GAMMA = args.solver_lr_gamma
+    if hasattr(args, "solver_max_epochs"):
+        cfg.SOLVER.MAX_EPOCHS = args.solver_max_epochs
+    if hasattr(args, "solver_weight_decay"):
+        cfg.SOLVER.WEIGHT_DECAY = args.solver_weight_decay
+    if hasattr(args, "train_batch_size"):
+        cfg.TRAIN.BATCH_SIZE = args.train_batch_size
 
     return cfg

@@ -1,23 +1,23 @@
 NUM_GPUS: 1
 TRAIN:
   BATCH_SIZE: 16
-  EVAL_PERIOD: 5
+  EVAL_PERIOD: 10
   CHECKPOINT_PERIOD: 1
-  CHECKPOINT_FILE_PATH: '/home/studio-lab-user/slowfast_head.pth'
+  CHECKPOINT_FILE_PATH: '/kaggle/input/ava-heads/slowfast_head.pth'
 DATA:
-  FEATURE_DIR: "/home/studio-lab-user/features"
+  FEATURE_DIR: "/kaggle/input/ava-npy/"
 MODEL:
   NUM_CLASSES: 80
   LOSS_FUNC: "cross_entropy"
   HEAD_ACT: "none"
 SOLVER:
-  BASE_LR: 5e-5
+  BASE_LR: 2e-4
   LR_POLICY: ""
-  GAMMA: 0.999
+  GAMMA: 0.99
   STEP_SIZE: 0
   STEPS: []
   LRS: []
-  MAX_EPOCH: 300
+  MAX_EPOCH: 75
   MOMENTUM: 0.9
   DAMPENING: 0.0
   WEIGHT_DECAY: 5e-4
@@ -30,8 +30,8 @@ WANDB:
 AVA:
   TEST_LISTS: ["val.csv"]
   GROUNDTRUTH_FILE: "ava_val_v2.2.csv"
-  ANNOTATION_DIR: "/home/studio-lab-user/ava/annotations"
-  FRAME_LIST_DIR: "/home/studio-lab-user/ava/frame_lists"
+  ANNOTATION_DIR: "/kaggle/input/ava-official/ava_files/annotations"
+  FRAME_LIST_DIR: "/kaggle/input/ava-official/ava_files/frame_lists"
   EXCLUSION_FILE: "ava_train_excluded_timestamps_v2.2.csv"
   LABEL_MAP_FILE: "ava_action_list_v2.2_for_activitynet_2019.pbtxt"
-  FULL_TEST_ON_VAL: False
+  FULL_TEST_ON_VAL: True

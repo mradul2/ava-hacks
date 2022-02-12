@@ -59,8 +59,9 @@ def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoc
     })
     
 @torch.no_grad()
-def eval_epoch(valid_loader, model, val_meter, cur_epoch, cfg):
+def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
     model.eval()
+    valid_loss = 0.0
     for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(tqdm(valid_loader)):
         # Transfer the data to the current GPU device.
         inputs = inputs.cuda()
@@ -69,6 +70,9 @@ def eval_epoch(valid_loader, model, val_meter, cur_epoch, cfg):
         
         # Forward pass
         preds = model(inputs)
+        loss = criterion(preds, labels)
+
+        valid_loss += loss.item()
         
         # Update and log stats.
         val_meter.update_stats(preds, ori_boxes, metadata)
@@ -77,6 +81,11 @@ def eval_epoch(valid_loader, model, val_meter, cur_epoch, cfg):
     val_meter.log_epoch_stats(cur_epoch)
     print(val_meter.full_map)
     val_meter.reset()
+    valid_loss /= len(valid_loader)
+
+    wandb.log({
+        "Validation Loss": valid_loss,
+    })
     
 def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     lr = cfg.SOLVER.BASE_LR
@@ -96,7 +105,7 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
         train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
         if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0:
-            eval_epoch(valid_loader, model, valid_meter, cur_epoch, cfg)
+            eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
         scheduler.step()
         
 def main():

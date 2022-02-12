@@ -1,24 +1,20 @@
-import torch
-import torch.nn as nn
-import torchvision
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
-import torch.optim as optim
-from torch.optim.lr_scheduler import ExponentialLR
-
-from slowfast.utils.def_config import assert_and_infer_cfg
-from slowfast.utils.parser import load_config, parse_args
-from slowfast.utils.meters import AVAMeter, TrainMeter, ValMeter
+import os
 
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+from torch.optim.lr_scheduler import ExponentialLR
+from torch.utils.data import DataLoader
+from torchvision.transforms import ToTensor
 from tqdm import tqdm
-import os 
 
-from data.dataset import AVADataset
+from data.dataset import AVADataset, AVADatasetNpy
 from models.base import AVAModel
-
-import wandb
-from utils.wandb import init_wandb
+from slowfast.utils.def_config import assert_and_infer_cfg
+from slowfast.utils.meters import AVAMeter, TrainMeter, ValMeter
+from slowfast.utils.parser import load_config, parse_args
 
 
 @torch.no_grad()
@@ -34,7 +30,7 @@ def perform_test(test_loader, model, test_meter, cfg):
         test_meter.data_toc()
 
         # Compute the predictions.
-        preds = model(inputs[0])
+        preds = model(inputs)
 
         preds = preds.detach().cpu() if cfg.NUM_GPUS else preds.detach()
         ori_boxes = ori_boxes.detach().cpu() if cfg.NUM_GPUS else ori_boxes.detach()
@@ -42,7 +38,7 @@ def perform_test(test_loader, model, test_meter, cfg):
 
         test_meter.iter_toc()
         # Update and log stats.
-        test_meter.update_stats(preds, ori_boxes[0], metadata[0])
+        test_meter.update_stats(preds, ori_boxes, metadata)
         test_meter.log_iter_stats(None, cur_iter)
         test_meter.iter_tic()
 
@@ -53,12 +49,9 @@ def main():
     args = parse_args()
     cfg = load_config(args)
     cfg = assert_and_infer_cfg(cfg)
-    
-    # Initialize wandb
-    # init_wandb(cfg)
 
-    print("Constucting Training and Validation DataLoader")
-    test_dataset = AVADataset(cfg.DATA.FEATURE_DIR, "val")
+    print("Constucting Validation DataLoader")
+    test_dataset = AVADatasetNpy(cfg.DATA.FEATURE_DIR, "val")
     test_loader = DataLoader(test_dataset, batch_size=cfg.TEST.BATCH_SIZE, shuffle=False)
     print("Dataloaders constructed")
     

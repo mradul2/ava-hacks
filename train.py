@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 from slowfast.utils.def_config import assert_and_infer_cfg
 from slowfast.utils.parser import load_config, parse_args
-from slowfast.utils.meters import AVAMeter, TrainMeter, ValMeter
+from slowfast.utils.meters import AVAMeter
 
 import numpy as np
 from tqdm import tqdm
@@ -23,21 +23,15 @@ from utils.wandb import init_wandb
 def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg):
     # Enable train mode.
     model.train()
-    data_size = len(train_loader)
     epoch_loss = 0.0
     
-    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(tqdm(train_loader)):
+    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(train_loader):
         # Transfer the data to the current GPU device.
         inputs = inputs.cuda()
         labels = labels.cuda()
-        labels = labels[0]
-        inputs = inputs[0]
-        ori_boxes = ori_boxes.cuda()
-        metadata = metadata.cuda()
         
         # Forward pass
         preds = model(inputs)
-        labels = torch.argmax(labels, dim=1)
         loss = criterion(preds, labels)
 
         # Backward pass
@@ -46,7 +40,6 @@ def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoc
         optimizer.step()
 
         iter_loss = loss.item()
-        iter_loss /= inputs.shape[0]
         epoch_loss += iter_loss
         
         train_meter.update_stats(None, None, None, iter_loss, 0)
@@ -55,6 +48,7 @@ def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoc
         
         wandb.log({
             "Iteration loss": iter_loss,
+            "Learning rate": optimizer.param_groups[0]['lr']
         })
         
     train_meter.log_epoch_stats(cur_epoch)
@@ -70,18 +64,14 @@ def eval_epoch(valid_loader, model, val_meter, cur_epoch, cfg):
     for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(tqdm(valid_loader)):
         # Transfer the data to the current GPU device.
         inputs = inputs.cuda()
-        labels = labels.cuda()
-        labels = labels[0]
-        inputs = inputs[0]
         ori_boxes = ori_boxes.cuda()
         metadata = metadata.cuda()
         
         # Forward pass
         preds = model(inputs)
-        labels = torch.argmax(labels, dim=1)
         
         # Update and log stats.
-        val_meter.update_stats(preds, ori_boxes[0], metadata[0])
+        val_meter.update_stats(preds, ori_boxes, metadata)
         val_meter.log_iter_stats(cur_epoch, cur_iter)
         
     val_meter.log_epoch_stats(cur_epoch)
@@ -93,16 +83,20 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     wd = cfg.SOLVER.WEIGHT_DECAY
     gamma = cfg.SOLVER.GAMMA
     momentum = cfg.SOLVER.MOMENTUM
-    criterion = nn.CrossEntropyLoss()
+    if cfg.MODEL.LOSS_FUNC == "cross_entropy":
+        criterion = nn.CrossEntropyLoss()
+    elif cfg.MODEL.LOSS_FUNC == "bce_logit":
+        criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.SGD(model.parameters(),
                           lr=lr,
                           weight_decay=wd,
                           momentum=momentum)
     scheduler = ExponentialLR(optimizer, gamma=gamma)
     
-    for cur_epoch in tqdm(range(0, cfg.SOLVER.MAX_EPOCH)):
+    for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
         train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
-        eval_epoch(valid_loader, model, valid_meter, cur_epoch, cfg)
+        if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0:
+            eval_epoch(valid_loader, model, valid_meter, cur_epoch, cfg)
         scheduler.step()
         
 def main():
@@ -121,7 +115,7 @@ def main():
     print("Dataloaders constructed")
     
     print("Constructing Model")
-    model = AVAModel(dim_in=2304, dim_out=80)
+    model = AVAModel(dim_in=2304, dim_out=80, act=cfg.MODEL.HEAD_ACT)
     model = model.cuda()
     print("Model Construction Complete")
     

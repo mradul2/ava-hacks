@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
-from data.dataset import AVADataset
+from data.dataset import AVADataset, AVADatasetNpy
 from models.base import AVAModel
 from slowfast.utils.def_config import assert_and_infer_cfg
 from slowfast.utils.meters import AVAMeter
@@ -124,8 +124,8 @@ def main():
     init_wandb(cfg)
 
     print("Constructing Training and Validation DataLoader")
-    train_dataset = AVADataset(cfg.DATA.FEATURE_DIR, "train")
-    valid_dataset = AVADataset(cfg.DATA.FEATURE_DIR, "val")
+    train_dataset = AVADatasetNpy(cfg.DATA.FEATURE_DIR, "train")
+    valid_dataset = AVADatasetNpy(cfg.DATA.FEATURE_DIR, "val")
     train_loader = DataLoader(train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=cfg.TEST.BATCH_SIZE, shuffle=False)
     print("Dataloaders constructed")

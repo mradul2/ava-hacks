@@ -1,24 +1,23 @@
-import torch
-import torch.nn as nn
-import torchvision
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
-import torch.optim as optim
-from torch.optim.lr_scheduler import ExponentialLR
-
-from slowfast.utils.def_config import assert_and_infer_cfg
-from slowfast.utils.parser import load_config, parse_args
-from slowfast.utils.meters import AVAMeter
+import os
 
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+import wandb
+from torch.optim.lr_scheduler import ExponentialLR
+from torch.utils.data import DataLoader
+from torchvision.transforms import ToTensor
 from tqdm import tqdm
-import os 
 
 from data.dataset import AVADataset
 from models.base import AVAModel
-
-import wandb
+from slowfast.utils.def_config import assert_and_infer_cfg
+from slowfast.utils.meters import AVAMeter
+from slowfast.utils.parser import load_config, parse_args
 from utils.wandb import init_wandb
+
 
 def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg):
     # Enable train mode.
@@ -62,7 +61,7 @@ def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoc
 def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
     model.eval()
     valid_loss = 0.0
-    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(tqdm(valid_loader)):
+    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(valid_loader):
         # Transfer the data to the current GPU device.
         inputs = inputs.cuda()
         ori_boxes = ori_boxes.cuda()
@@ -70,8 +69,14 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         
         # Forward pass
         preds = model(inputs)
-        loss = criterion(preds, labels)
+        if cfg.MODEL.HEAD_ACT == "sigmoid":
+            head = nn.Sigmoid()
+        elif cfg.MODEL.HEAD_ACT == "softmax":
+            head = nn.Softmax(dim=1)
+        preds = head(preds)
 
+        # Backward pass
+        loss = criterion(preds, labels)
         valid_loss += loss.item()
         
         # Update and log stats.
@@ -92,9 +97,7 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     wd = cfg.SOLVER.WEIGHT_DECAY
     gamma = cfg.SOLVER.GAMMA
     momentum = cfg.SOLVER.MOMENTUM
-    if cfg.MODEL.LOSS_FUNC == "cross_entropy":
-        criterion = nn.CrossEntropyLoss()
-    elif cfg.MODEL.LOSS_FUNC == "bce_logit":
+    if cfg.MODEL.LOSS_FUNC == "bce_logit":
         criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.SGD(model.parameters(),
                           lr=lr,
@@ -107,6 +110,10 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
         if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0:
             eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
         scheduler.step()
+
+    # Save the model
+    torch.save(model.state_dict(), "model.pth")
+    wandb.save("model.pth")
         
 def main():
     args = parse_args()
@@ -124,7 +131,7 @@ def main():
     print("Dataloaders constructed")
     
     print("Constructing Model")
-    model = AVAModel(dim_in=2304, dim_out=80, act=cfg.MODEL.HEAD_ACT)
+    model = AVAModel(dim_in=2304, dim_out=80)
     model = model.cuda()
     print("Model Construction Complete")
     

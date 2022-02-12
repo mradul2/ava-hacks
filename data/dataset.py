@@ -1,13 +1,11 @@
+import glob
+import os
+from os.path import isfile, join
+
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-
-import os
-import glob
-import numpy as np
-
-from os.path import join
-from os.path import isfile
 
 
 class AVADataset(Dataset):

@@ -8,7 +8,7 @@ DATA:
   FEATURE_DIR: "/kaggle/input/ava-npy/"
 MODEL:
   NUM_CLASSES: 80
-  LOSS_FUNC: "cross_entropy"
+  LOSS_FUNC: "bce_logit"
   HEAD_ACT: "none"
 SOLVER:
   BASE_LR: 2e-4

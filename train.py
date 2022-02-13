@@ -66,6 +66,7 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         inputs = inputs.cuda()
         ori_boxes = ori_boxes.cuda()
         metadata = metadata.cuda()
+        labels = labels.cuda()
         
         # Forward pass
         preds = model(inputs)

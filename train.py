@@ -109,7 +109,7 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     
     for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
         train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
-        if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0:
+        if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0 or cur_epoch == cfg.SOLVER.MAX_EPOCH:
             eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
         scheduler.step()
 

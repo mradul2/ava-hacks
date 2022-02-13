@@ -87,7 +87,8 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         val_meter.log_iter_stats(cur_epoch, cur_iter)
         
     val_meter.log_epoch_stats(cur_epoch)
-    print(val_meter.full_map)
+    validation_results = val_meter.full_map
+    print(validation_results)
     val_meter.reset()
     valid_loss /= len(valid_loader)
 

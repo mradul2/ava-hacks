@@ -23,6 +23,7 @@ from slowfast.utils.ava_eval_helper import (
 
 import simplejson
 import decimal
+import wandb
 
 def log_json_stats(stats):
     """
@@ -219,6 +220,7 @@ class AVAMeter(object):
         )
         if log:
             stats = {"mode": self.mode, "map": self.full_map}
+            wandb.log("mAP", self.full_map)
             log_json_stats(stats)
 
     def log_epoch_stats(self, cur_epoch):

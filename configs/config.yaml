@@ -1,7 +1,7 @@
 NUM_GPUS: 1
 TRAIN:
   BATCH_SIZE: 16
-  EVAL_PERIOD: 10
+  EVAL_PERIOD: 25
   CHECKPOINT_PERIOD: 1
   CHECKPOINT_FILE_PATH: '/kaggle/input/ava-heads/slowfast_head.pth'
 DATA:

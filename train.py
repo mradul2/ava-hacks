@@ -69,11 +69,13 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         
         # Forward pass
         preds = model(inputs)
+        head = None
         if cfg.MODEL.HEAD_ACT == "sigmoid":
             head = nn.Sigmoid()
         elif cfg.MODEL.HEAD_ACT == "softmax":
             head = nn.Softmax(dim=1)
-        preds = head(preds)
+        if head is not None:
+            preds = head(preds) 
 
         # Backward pass
         loss = criterion(preds, labels)

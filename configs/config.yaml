@@ -9,7 +9,7 @@ DATA:
 MODEL:
   NUM_CLASSES: 80
   LOSS_FUNC: "bce_logit"
-  HEAD_ACT: "none"
+  HEAD_ACT: "sigmoid"
 SOLVER:
   BASE_LR: 2e-4
   LR_POLICY: ""

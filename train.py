@@ -105,6 +105,7 @@ def calculate_metrics(model, valid_loader, val_meter, cfg):
             
         val_meter.update_stats(preds, ori_boxes, metadata)
         
+    val_meter.log_epoch_stats(-1)
     validation_results = val_meter.full_map
     print(validation_results)
     val_meter.reset()

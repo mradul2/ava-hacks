@@ -1,6 +1,6 @@
 NUM_GPUS: 1
 TRAIN:
-  BATCH_SIZE: 16
+  BATCH_SIZE: 2
   EVAL_PERIOD: 25
   CHECKPOINT_PERIOD: 1
   CHECKPOINT_FILE_PATH: '/kaggle/input/ava-heads/slowfast_head.pth'
@@ -17,7 +17,7 @@ SOLVER:
   STEP_SIZE: 0
   STEPS: []
   LRS: []
-  MAX_EPOCH: 25
+  MAX_EPOCH: 15
   MOMENTUM: 0.9
   DAMPENING: 0.0
   WEIGHT_DECAY: 5e-4

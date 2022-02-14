@@ -80,6 +80,7 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
     wandb.log({
         "Validation Loss": valid_loss,
     })
+    return valid_loss
 
 @torch.no_grad()
 def calculate_metrics(model, valid_loader, val_meter, cfg):
@@ -124,9 +125,14 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
                           momentum=momentum)
     scheduler = ExponentialLR(optimizer, gamma=gamma)
     
+    min_valid_loss = float("inf")
     for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
         train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
-        eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
+        valid_loss = eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
+        if valid_loss < min_valid_loss:
+            min_valid_loss = valid_loss
+            torch.save(model.state_dict(), "model_best.pth")
+            wandb.save("model_best.pth")
         scheduler.step()
     calculate_metrics(model, valid_loader, valid_meter, cfg)
 

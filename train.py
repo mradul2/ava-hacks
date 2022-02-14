@@ -74,6 +74,25 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         # Backward pass
         loss = criterion(preds, labels)
         valid_loss += loss.item()
+
+    valid_loss /= len(valid_loader)
+
+    wandb.log({
+        "Validation Loss": valid_loss,
+    })
+
+@torch.no_grad()
+def calculate_metrics(model, valid_loader, val_meter, cfg):
+    model.eval()
+    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(valid_loader):
+        # Transfer the data to the current GPU device.
+        inputs = inputs.cuda()
+        ori_boxes = ori_boxes.cuda()
+        metadata = metadata.cuda()
+        labels = labels.cuda()
+        
+        # Forward pass
+        preds = model(inputs)
         
         # Update and log stats.
         head = None
@@ -85,17 +104,11 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
             preds = head(preds) 
             
         val_meter.update_stats(preds, ori_boxes, metadata)
-        val_meter.log_iter_stats(cur_epoch, cur_iter)
         
-    val_meter.log_epoch_stats(cur_epoch)
     validation_results = val_meter.full_map
     print(validation_results)
     val_meter.reset()
-    valid_loss /= len(valid_loader)
 
-    wandb.log({
-        "Validation Loss": valid_loss,
-    })
     
 def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     lr = cfg.SOLVER.BASE_LR
@@ -112,9 +125,9 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     
     for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
         train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
-        if cur_epoch%(cfg.TRAIN.EVAL_PERIOD) == 0 or cur_epoch == cfg.SOLVER.MAX_EPOCH:
-            eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
+        eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
         scheduler.step()
+    calculate_metrics(model, valid_loader, valid_meter, cfg)
 
     # Save the model
     torch.save(model.state_dict(), "model.pth")

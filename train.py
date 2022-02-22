@@ -1,4 +1,5 @@
 import os
+from xml.dom.expatbuilder import theDOMImplementation
 
 import numpy as np
 import torch
@@ -12,53 +13,15 @@ from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
 from data.dataset import AVADataset, AVADatasetNpy
-from models.base import AVAModel
+from models.base import AVAModel, AVAModelMLP
 from slowfast.utils.def_config import assert_and_infer_cfg
 from slowfast.utils.meters import AVAMeter
 from slowfast.utils.parser import load_config, parse_args
 from utils.wandb import init_wandb
 
 
-def train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg):
-    # Enable train mode.
-    model.train()
-    epoch_loss = 0.0
-    
-    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(train_loader):
-        # Transfer the data to the current GPU device.
-        inputs = inputs.cuda()
-        labels = labels.cuda()
-        
-        # Forward pass
-        preds = model(inputs)
-        loss = criterion(preds, labels)
-
-        # Backward pass
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        iter_loss = loss.item()
-        epoch_loss += iter_loss
-        
-        train_meter.update_stats(None, None, None, iter_loss, 0)
-        
-        train_meter.log_iter_stats(cur_epoch, cur_iter)
-        
-        wandb.log({
-            "Iteration loss": iter_loss,
-            "Learning rate": optimizer.param_groups[0]['lr']
-        })
-        
-    train_meter.log_epoch_stats(cur_epoch)
-    train_meter.reset()
-    epoch_loss /= len(train_loader)
-    wandb.log({
-        "Epoch Loss": epoch_loss,
-    })
-    
 @torch.no_grad()
-def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
+def evaluation(valid_loader, model, criterion):
     model.eval()
     valid_loss = 0.0
     for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(valid_loader):
@@ -76,16 +39,12 @@ def eval_epoch(valid_loader, model, criterion, val_meter, cur_epoch, cfg):
         valid_loss += loss.item()
 
     valid_loss /= len(valid_loader)
-
-    wandb.log({
-        "Validation Loss": valid_loss,
-    })
     return valid_loss
 
 @torch.no_grad()
 def calculate_metrics(model, valid_loader, val_meter, cfg):
     model.eval()
-    for cur_iter, (inputs, labels, ori_boxes, metadata) in enumerate(valid_loader):
+    for inputs, labels, ori_boxes, metadata in valid_loader:
         # Transfer the data to the current GPU device.
         inputs = inputs.cuda()
         ori_boxes = ori_boxes.cuda()
@@ -117,26 +76,51 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     wd = cfg.SOLVER.WEIGHT_DECAY
     gamma = cfg.SOLVER.GAMMA
     momentum = cfg.SOLVER.MOMENTUM
+
     if cfg.MODEL.LOSS_FUNC == "bce_logit":
         criterion = nn.BCEWithLogitsLoss()
+
     optimizer = optim.SGD(model.parameters(),
                           lr=lr,
                           weight_decay=wd,
                           momentum=momentum)
-    scheduler = ExponentialLR(optimizer, gamma=gamma)
-    
-    min_valid_loss = float("inf")
-    for cur_epoch in tqdm(range(1, cfg.SOLVER.MAX_EPOCH+1)):
-        train_epoch(train_loader, model, criterion, optimizer, train_meter, cur_epoch, cfg)
-        valid_loss = eval_epoch(valid_loader, model, criterion, valid_meter, cur_epoch, cfg)
-        if valid_loss < min_valid_loss:
-            min_valid_loss = valid_loss
-            torch.save(model.state_dict(), "model_best.pth")
-            wandb.save("model_best.pth")
-        scheduler.step()
-    calculate_metrics(model, valid_loader, valid_meter, cfg)
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, cfg.SOLVER.STEPS, gamma)
 
-    # Save the model
+    model.train()
+    iterator = iter(train_loader)
+    for cur_iter in tqdm(range(cfg.SOLVER.MAX_ITERATIONS)):
+        batch = next(iterator)
+        inputs, labels, ori_boxes, metadata = batch
+
+        # Convert to cuda tensors
+        inputs = inputs.cuda()
+        labels = labels.cuda()
+        ori_boxes = ori_boxes.cuda()
+        metadata = metadata.cuda()
+
+        # Forward pass
+        preds = model(inputs)
+        loss = criterion(preds, labels)
+
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        scheduler.step()
+
+        iteration_loss = loss.item()
+        wandb.log({
+            "Iteratiion": cur_iter,
+            "Train Iteration loss": iteration_loss,
+        })
+
+        if cur_iter % cfg.TRAIN.EVAL_PERIOD == 0:
+            valid_loss = evaluation(valid_loader, model, criterion)
+            wandb.log(
+                {"Validation loss": valid_loss}
+            )
+
+    calculate_metrics(model, valid_loader, valid_meter, cfg)
     torch.save(model.state_dict(), "model.pth")
     wandb.save("model.pth")
         
@@ -156,7 +140,15 @@ def main():
     print("Dataloaders constructed")
     
     print("Constructing Model")
-    model = AVAModel(dim_in=2304, dim_out=80)
+    dim_in = 80
+    dim_mid = 512
+    dim_out = cfg.MODEL.NUM_CLASSES
+    if cfg.MODEL.MODEL_NAME == "Base":
+        model = AVAModel(dim_in, dim_out)
+    elif cfg.MODEL.MODEL_NAME == "MLP":
+        model = AVAModelMLP(dim_in, dim_mid, dim_out)
+    else:
+        raise ValueError("Unknown model name: {}".format(cfg.MODEL.MODEL_NAME))
     model = model.cuda()
     print("Model Construction Complete")
     

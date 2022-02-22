@@ -533,7 +533,7 @@ _C.SOLVER.STEPS = []
 _C.SOLVER.LRS = []
 
 # Maximal number of epochs.
-_C.SOLVER.MAX_EPOCH = 300
+_C.SOLVER.MAX_ITERATIONS = 300
 
 # Momentum.
 _C.SOLVER.MOMENTUM = 0.9

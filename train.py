@@ -11,6 +11,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
+from zmq import CONFLATE
 
 from data.dataset import AVADataset, AVADatasetNpy
 from models.base import AVAModel, AVAModelMLP
@@ -18,6 +19,8 @@ from slowfast.utils.def_config import assert_and_infer_cfg
 from slowfast.utils.meters import AVAMeter
 from slowfast.utils.parser import load_config, parse_args
 from utils.wandb import init_wandb
+
+from utils.defs import *
 
 
 @torch.no_grad()
@@ -79,6 +82,9 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
 
     if cfg.MODEL.LOSS_FUNC == "bce_logit":
         criterion = nn.BCEWithLogitsLoss()
+    elif cfg.MODEL.LOSS_FUNC == "bce_logit_weighted":
+        pos_weight = torch.log(1 + 1 / CLASS_FREQ)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     optimizer = optim.SGD(model.parameters(),
                           lr=lr,
@@ -110,8 +116,9 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
 
         iteration_loss = loss.item()
         wandb.log({
-            "Iteratiion": cur_iter,
+            "Iteration": cur_iter,
             "Train Iteration loss": iteration_loss,
+            "Learning rate": optimizer.param_groups[0]["lr"],
         })
 
         if cur_iter % cfg.TRAIN.EVAL_PERIOD == 0:
@@ -140,7 +147,7 @@ def main():
     print("Dataloaders constructed")
     
     print("Constructing Model")
-    dim_in = 80
+    dim_in = 2304
     dim_mid = 512
     dim_out = cfg.MODEL.NUM_CLASSES
     if cfg.MODEL.MODEL_NAME == "Base":

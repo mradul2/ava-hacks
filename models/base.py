@@ -37,7 +37,7 @@ class AVAModel(nn.Module):
 
 class AVAModelMLP(nn.Module):
     def __init__(self, dim_in, dim_mid, dim_out):
-        super(AVAModel, self).__init__()
+        super(AVAModelMLP, self).__init__()
         self.head = MLP(dim_in, dim_mid, dim_out)
     def forward(self, preds):
         preds = self.head(preds)

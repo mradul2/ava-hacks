@@ -84,6 +84,7 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
         criterion = nn.BCEWithLogitsLoss()
     elif cfg.MODEL.LOSS_FUNC == "bce_logit_weighted":
         pos_weight = torch.log(1 + 1 / CLASS_FREQ)
+        pos_weight = pos_weight.cuda()
         criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     optimizer = optim.SGD(model.parameters(),
@@ -95,7 +96,11 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     model.train()
     iterator = iter(train_loader)
     for cur_iter in tqdm(range(cfg.SOLVER.MAX_ITERATIONS)):
-        batch = next(iterator)
+        try:
+            batch = next(iterator)
+        except StopIteration:
+            iterator = iter(train_loader)
+            batch = next(iterator)
         inputs, labels, ori_boxes, metadata = batch
 
         # Convert to cuda tensors
@@ -116,7 +121,6 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
 
         iteration_loss = loss.item()
         wandb.log({
-            "Iteration": cur_iter,
             "Train Iteration loss": iteration_loss,
             "Learning rate": optimizer.param_groups[0]["lr"],
         })

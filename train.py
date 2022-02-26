@@ -83,7 +83,8 @@ def train(train_loader, valid_loader, model, train_meter, valid_meter, cfg):
     if cfg.MODEL.LOSS_FUNC == "bce_logit":
         criterion = nn.BCEWithLogitsLoss()
     elif cfg.MODEL.LOSS_FUNC == "bce_logit_weighted":
-        pos_weight = torch.log(1 + 1 / CLASS_FREQ)
+        temp = 690084 / (80 * CLASS_FREQ)
+        pos_weight = 1 / torch.log(1 + temp)
         pos_weight = pos_weight.cuda()
         criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 

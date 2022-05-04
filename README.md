@@ -25,6 +25,18 @@ Pre-trained Slow-fast model with 29.4 mAP on AVA dataset can be downloaded from 
 python3 feature_extraction.py --cfg configs/slowfast.yaml
 ```
 
+## Training and Evaluation
+
+A classification head can be trained and evaluated using the following two bash commands after making appropriate changes in the config file.
+
+```bash 
+python3 train.py --cfg configs/config.yamk
+```
+
+```bash
+python3 test.py --cfg configs/config.yaml
+```
+
 ## Contributors
 
 This repository is maintained by [Video-Language Understanding Research Group](https://makarandtapaswi.github.io) (IIIT Hyderabad)
